@@ -16,7 +16,8 @@ import {
   getAvailableTimeSlots, 
   sendOTP, 
   createBooking,
-  getServiceName
+  getServiceName,
+  OTPErrorCode
 } from '@/app/lib/firebase/booking';
 import { useLanguage } from '@/app/lib/i18n';
 import { formatDateLocalized, formatDateShort, formatDateShortWithWeekday } from '@/app/lib/i18n/translations';
@@ -48,31 +49,41 @@ function getFriendlyError(error: string): string {
   return error;
 }
 
-// Error Toast Component
+// Error Snackbar - Minimal bottom notification
 function ErrorToast({ message, onClose, isRTL = false }: { message: string; onClose: () => void; isRTL?: boolean }) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 5000);
+    const timer = setTimeout(onClose, 4000);
     return () => clearTimeout(timer);
   }, [onClose]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      initial={{ opacity: 0, y: 80, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.9 }}
-      className="fixed bottom-24 left-4 right-4 z-50 max-w-lg mx-auto"
-      dir={isRTL ? 'rtl' : 'ltr'}
+      exit={{ opacity: 0, y: 80, scale: 0.95 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+      className="fixed bottom-6 inset-x-0 z-[100] flex justify-center px-4"
     >
-      <div className={`bg-red-50 border border-red-200 rounded-2xl p-4 shadow-lg flex items-start gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <AlertCircle className="w-4 h-4 text-red-600" />
-        </div>
-        <div className={`flex-1 min-w-0 ${isRTL ? 'text-right' : ''}`}>
-          <p className="text-[14px] font-medium text-red-900">Something went wrong</p>
-          <p className="text-[13px] text-red-700 mt-0.5">{message}</p>
-        </div>
-        <button onClick={onClose} className={`p-1 ${isRTL ? '-ml-1' : '-mr-1'} -mt-1 rounded-full hover:bg-red-100`}>
-          <X className="w-4 h-4 text-red-400" />
+      <div 
+        className="flex items-center gap-2.5 pl-3 pr-2 py-2 rounded-full shadow-xl"
+        style={{
+          backgroundColor: '#1f1f1f',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+        }}
+        dir={isRTL ? 'rtl' : 'ltr'}
+      >
+        {/* Red dot indicator */}
+        <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
+        
+        {/* Message */}
+        <p className="text-[13px] text-white/90 max-w-[260px] truncate">{message}</p>
+        
+        {/* Dismiss */}
+        <button 
+          onClick={onClose} 
+          className="ml-1 px-3 py-1 rounded-full text-[12px] font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          OK
         </button>
       </div>
     </motion.div>
@@ -100,6 +111,10 @@ export default function BookingPage() {
   const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpErrorCode, setOtpErrorCode] = useState<OTPErrorCode | null>(null);
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
+  const [otpShake, setOtpShake] = useState(false);
+  const [otpSuccess, setOtpSuccess] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [countdown, setCountdown] = useState(60);
 
@@ -164,7 +179,7 @@ export default function BookingPage() {
       case 1: return !!selectedService;
       case 2: return !!selectedDate;
       case 3: return !!selectedTime;
-      case 4: return name.trim().length > 0 && phone.length === 10;
+      case 4: return name.trim().length > 0 && phone.length === 10 && phone.startsWith('05');
       default: return false;
     }
   }, [step, selectedService, selectedDate, selectedTime, name, phone]);
@@ -192,6 +207,10 @@ export default function BookingPage() {
   const back = () => {
     setStep(s => s - 1);
     setOtpError(null);
+    setOtpErrorCode(null);
+    setAttemptsLeft(null);
+    setOtpShake(false);
+    setOtpSuccess(false);
     setToastError(null);
     if (step === 3) setSelectedTime(null);
   };
@@ -212,13 +231,21 @@ export default function BookingPage() {
     }
   };
 
+  const triggerShake = () => {
+    setOtpShake(true);
+    setTimeout(() => setOtpShake(false), 500);
+  };
+
   const verify = async (code: string) => {
     if (!selectedService || !selectedDate || !selectedTime) return;
     
     setOtpVerifying(true);
     setOtpError(null);
+    setOtpErrorCode(null);
+    setAttemptsLeft(null);
+    
     try {
-      await createBooking({
+      const result = await createBooking({
         serviceId: selectedService.id,
         date: format(selectedDate, 'yyyy-MM-dd'),
         time: selectedTime,
@@ -226,10 +253,40 @@ export default function BookingPage() {
         phone: phone.trim(),
         code,
       });
-      setStep(6);
+      
+      if (result.success) {
+        // Show success state on OTP inputs
+        setOtpVerifying(false);
+        setOtpSuccess(true);
+        // Delay transition to success page for visual feedback
+        setTimeout(() => {
+          setStep(6);
+          setOtpSuccess(false);
+        }, 1500);
+        return;
+      } else {
+        // Handle OTP error responses
+        setOtpErrorCode(result.code || null);
+        setOtpError(result.error || 'Verification failed');
+        
+        if (result.attemptsLeft !== undefined) {
+          setAttemptsLeft(result.attemptsLeft);
+        }
+        
+        // Trigger shake animation for invalid code
+        if (result.code === 'OTP_INVALID_CODE') {
+          triggerShake();
+        }
+        
+        // Auto-prompt for new code on certain errors
+        if (result.code === 'OTP_NOT_FOUND' || result.code === 'OTP_EXPIRED' || result.code === 'OTP_TOO_MANY_ATTEMPTS') {
+          setCanResend(true);
+        }
+      }
     } catch (e: any) {
-      const friendlyMsg = getFriendlyError(e.message || 'Invalid code');
+      const friendlyMsg = getFriendlyError(e.message || 'Verification failed');
       setOtpError(friendlyMsg);
+      triggerShake();
     } finally {
       setOtpVerifying(false);
     }
@@ -365,15 +422,15 @@ export default function BookingPage() {
 
           {/* Step 4: Details */}
           {step === 4 && (
-            <motion.div key="s4" {...pageTransition} className="px-4 pt-6">
+            <motion.div key="s4" {...pageTransition} className="px-4 min-h-[calc(100vh-180px)] flex flex-col justify-center">
               {/* Header */}
-              <div className="text-center mb-8">
+              <div className="text-center mb-6">
                 <h1 className="text-[24px] sm:text-[28px] font-bold text-primary mb-2">{t('almostThere')}</h1>
                 <p className="text-[14px] text-secondary">{t('enterYourDetails')}</p>
               </div>
 
               {/* Compact Booking Summary - Inline */}
-              <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="flex items-center justify-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
                   <svg className="w-4 h-4" style={{ color: 'rgb(var(--accent-500))' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -410,18 +467,21 @@ export default function BookingPage() {
                       onChange={e => setName(e.target.value)}
                       placeholder={t('enterYourName')}
                       dir={isRTL ? 'rtl' : 'ltr'}
-                      className={`w-full h-[52px] ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-[15px] rounded-xl transition-all duration-200 outline-none`}
+                      className={`w-full h-[52px] ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-[15px] rounded-xl transition-all duration-200 outline-none border`}
                       style={{ 
                         backgroundColor: 'rgb(var(--accent-50))',
-                        color: 'rgb(var(--text-primary))'
+                        color: 'rgb(var(--text-primary))',
+                        borderColor: 'rgb(var(--accent-200))'
                       }}
                       onFocus={e => {
                         e.target.style.backgroundColor = 'rgb(var(--bg-card))';
                         e.target.style.boxShadow = '0 0 0 2px rgb(var(--accent-400))';
+                        e.target.style.borderColor = 'rgb(var(--accent-400))';
                       }}
                       onBlur={e => {
                         e.target.style.backgroundColor = 'rgb(var(--accent-50))';
                         e.target.style.boxShadow = 'none';
+                        e.target.style.borderColor = 'rgb(var(--accent-200))';
                       }}
                       autoComplete="name"
                     />
@@ -445,18 +505,21 @@ export default function BookingPage() {
                       value={phone}
                       onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
                       placeholder="05X XXX XXXX"
-                      className={`w-full h-[52px] ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-[15px] tracking-wide rounded-xl transition-all duration-200 outline-none font-medium`}
+                      className={`w-full h-[52px] ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-[15px] tracking-wide rounded-xl transition-all duration-200 outline-none font-medium border`}
                       style={{ 
                         backgroundColor: 'rgb(var(--accent-50))',
-                        color: 'rgb(var(--text-primary))'
+                        color: 'rgb(var(--text-primary))',
+                        borderColor: 'rgb(var(--accent-200))'
                       }}
                       onFocus={e => {
                         e.target.style.backgroundColor = 'rgb(var(--bg-card))';
                         e.target.style.boxShadow = '0 0 0 2px rgb(var(--accent-400))';
+                        e.target.style.borderColor = 'rgb(var(--accent-400))';
                       }}
                       onBlur={e => {
                         e.target.style.backgroundColor = 'rgb(var(--accent-50))';
                         e.target.style.boxShadow = 'none';
+                        e.target.style.borderColor = 'rgb(var(--accent-200))';
                       }}
                       autoComplete="tel"
                       maxLength={10}
@@ -475,18 +538,28 @@ export default function BookingPage() {
 
           {/* Step 5: OTP */}
           {step === 5 && (
-            <motion.div key="s5" {...pageTransition} className="px-4 pt-4 sm:pt-6">
+            <motion.div 
+              key="s5" 
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+              className="px-4 pt-8 sm:pt-12"
+            >
               {/* Verification Header */}
               <div className="text-center mb-8 sm:mb-10">
                 <motion.div 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-                  className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 bg-accent-solid rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-lg"
-                  style={{ boxShadow: '0 10px 25px -5px rgb(var(--accent-500) / 0.3)' }}
+                  className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-lg"
+                  style={{ 
+                    backgroundColor: 'rgb(var(--btn-bg))',
+                    boxShadow: '0 10px 25px -5px rgb(var(--accent-500) / 0.3)' 
+                  }}
                 >
-                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>
                 </motion.div>
                 
@@ -494,12 +567,22 @@ export default function BookingPage() {
                 <p className="text-[13px] sm:text-[14px] text-secondary">
                   {t('enterCode')}
                 </p>
-                <p className="text-[14px] sm:text-[15px] font-semibold text-primary mt-1 tracking-wide" dir="ltr">{phone}</p>
+                <p className="text-[14px] sm:text-[15px] font-semibold text-primary mt-1 tracking-wide" dir="ltr">
+                  {phone.replace(/(\d{3})(\d{7})/, '$1-$2')}
+                </p>
               </div>
 
               {/* OTP Input Area */}
               <div className="card p-6 mb-6">
-                <OTPInput length={4} onComplete={verify} disabled={otpVerifying} />
+                <OTPInput 
+                  length={4} 
+                  onComplete={verify} 
+                  disabled={otpVerifying || otpSuccess} 
+                  shake={otpShake}
+                  error={!!otpError}
+                  success={otpSuccess}
+                />
+                
                 
                 {otpVerifying && (
                   <motion.div 
@@ -522,7 +605,14 @@ export default function BookingPage() {
                     <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <AlertCircle className="w-4 h-4 text-red-500" />
                     </div>
-                    <p className={`text-[13px] text-red-700 leading-relaxed ${isRTL ? 'text-right' : ''}`}>{otpError}</p>
+                    <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
+                      <p className="text-[13px] text-red-700 leading-relaxed">{otpError}</p>
+                      {attemptsLeft !== null && attemptsLeft > 0 && (
+                        <p className="text-[12px] text-red-500 mt-1 font-medium">
+                          {attemptsLeft} {attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining
+                        </p>
+                      )}
+                    </div>
                   </motion.div>
                 )}
               </div>
@@ -546,9 +636,37 @@ export default function BookingPage() {
                     )}
                   </button>
                 ) : (
-                  <div className={`inline-flex items-center gap-2 bg-accent-light rounded-full px-4 py-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <div className="w-5 h-5 rounded-full bg-accent-medium flex items-center justify-center">
-                      <span className="text-[11px] font-bold text-accent-dark">{countdown}</span>
+                  <div className="inline-flex items-center gap-3" dir={isRTL ? 'rtl' : 'ltr'}>
+                    {/* Circular Progress Timer */}
+                    <div className="relative w-12 h-12">
+                      {/* Background circle */}
+                      <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="rgb(var(--accent-200))"
+                          strokeWidth="3"
+                        />
+                        {/* Progress circle */}
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          fill="none"
+                          stroke="rgb(var(--accent-500))"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeDasharray={125.6}
+                          strokeDashoffset={125.6 * (1 - countdown / 60)}
+                          className="transition-all duration-1000 ease-linear"
+                        />
+                      </svg>
+                      {/* Countdown number */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[16px] font-bold text-primary">{countdown}</span>
+                      </div>
                     </div>
                     <span className="text-[13px] text-secondary">{t('secondsToResend')}</span>
                   </div>
@@ -566,86 +684,168 @@ export default function BookingPage() {
           {step === 6 && (
             <motion.div
               key="s6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="px-4 pt-10 sm:pt-12 pb-8 text-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+              className="px-4 min-h-[calc(100vh-100px)] flex flex-col justify-center items-center text-center py-8 relative overflow-hidden"
             >
-              {/* Animated Success Icon */}
-              <div className="relative inline-block mb-4 sm:mb-5">
-                {/* Single pulsing ring - CSS animation for smoothness */}
-                <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: 'rgb(var(--accent-400) / 0.3)', animationDuration: '2s' }} />
-                
-                {/* Main success circle */}
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                  className="relative w-16 h-16 sm:w-20 sm:h-20 bg-accent-solid rounded-full flex items-center justify-center shadow-xl"
-                  style={{ boxShadow: '0 20px 40px -10px rgb(var(--accent-500) / 0.4)' }}
+              {/* Falling confetti from top */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[...Array(30)].map((_, i) => {
+                  const startX = Math.random() * 100; // Random horizontal position %
+                  const delay = Math.random() * 1.5; // Stagger the start
+                  const duration = 2.5 + Math.random() * 2; // Fall duration
+                  const width = 6 + Math.random() * 6; // 6-12px wide
+                  const height = 10 + Math.random() * 14; // 10-24px tall (rectangular strips)
+                  const colors = ['--accent-300', '--accent-400', '--accent-500', '--accent-200'];
+                  const color = colors[i % 4];
+                  const swayAmount = 30 + Math.random() * 40; // How much it sways
+                  
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ 
+                        top: -30,
+                        left: `${startX}%`,
+                        opacity: 1,
+                        rotateZ: Math.random() * 360,
+                        rotateY: 0,
+                      }}
+                      animate={{ 
+                        top: '110%',
+                        left: [`${startX}%`, `${startX + (Math.random() > 0.5 ? swayAmount : -swayAmount) * 0.3}%`, `${startX}%`],
+                        opacity: [1, 1, 0.8, 0],
+                        rotateZ: Math.random() * 720 - 360,
+                        rotateY: [0, 180, 360],
+                      }}
+                      transition={{
+                        duration: duration,
+                        delay: delay,
+                        ease: "linear",
+                        rotateY: {
+                          duration: duration * 0.5,
+                          repeat: 2,
+                          ease: "linear",
+                        }
+                      }}
+                      className="absolute rounded-sm"
+                      style={{ 
+                        width: width,
+                        height: height,
+                        backgroundColor: `rgb(var(${color}))`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Success Icon with glow */}
+              <motion.div 
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.1 }}
+                className="relative mx-auto mb-6"
+              >
+                {/* Outer glow ring */}
+                <div 
+                  className="absolute -inset-3 rounded-full opacity-20"
+                  style={{ 
+                    background: 'radial-gradient(circle, rgb(var(--accent-400)) 0%, transparent 70%)',
+                  }}
+                />
+                {/* Pulsing ring */}
+                <motion.div 
+                  className="absolute -inset-2 rounded-full"
+                  style={{ border: '2px solid rgb(var(--accent-400))' }}
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+                {/* Main circle */}
+                <div 
+                  className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center bg-accent-solid"
+                  style={{ boxShadow: '0 20px 50px -10px rgb(var(--accent-500) / 0.5)' }}
                 >
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
+                    transition={{ delay: 0.4, type: "spring", stiffness: 400, damping: 15 }}
                   >
-                    <Check className="w-8 h-8 sm:w-10 sm:h-10 text-white" strokeWidth={3} />
+                    <Check className="w-10 h-10 sm:w-12 sm:h-12 text-white" strokeWidth={2.5} />
                   </motion.div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
 
               {/* Success Message */}
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="mb-6"
               >
-                <h1 className="text-[20px] sm:text-[24px] font-bold text-primary mb-1">{t('requestSent')}</h1>
-                <p className="text-[13px] sm:text-[14px] text-secondary mb-5 sm:mb-6">
+                <h1 className="text-[24px] sm:text-[28px] font-bold text-primary mb-2">{t('requestSent')}</h1>
+                <p className="text-[14px] sm:text-[15px] text-secondary">
                   {t('requestSubmitted')}
                 </p>
               </motion.div>
 
-              {/* Request Details Card */}
+              {/* Confirmation Card - Ticket Style */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-                className={`card p-4 sm:p-5 mb-4 sm:mb-5 ${isRTL ? 'text-right' : 'text-left'}`}
+                transition={{ delay: 0.45, duration: 0.5 }}
+                className="relative mx-auto w-full max-w-sm"
               >
-                {/* Service & Price header */}
-                <div className={`flex justify-between items-start pb-3 sm:pb-4 mb-3 sm:mb-4 border-b border-accent ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div>
-                    <p className="text-[10px] sm:text-[11px] text-accent font-semibold uppercase tracking-wider mb-0.5">{t('service')}</p>
-                    <p className="text-[14px] sm:text-[16px] font-bold text-primary">{serviceName}</p>
-                  </div>
-                  <div className={isRTL ? 'text-left' : 'text-right'}>
-                    <p className="text-[10px] sm:text-[11px] text-secondary uppercase tracking-wider mb-0.5">{t('price')}</p>
-                    <p className="text-[15px] sm:text-[17px] font-bold text-primary">₪{selectedService?.price}</p>
-                  </div>
-                </div>
-                
-                {/* Date & Time blocks */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <div className="info-block">
-                    <p className="info-block-label">{t('date')}</p>
-                    <p className="info-block-value text-[13px] sm:text-[15px]">
-                      {selectedDate && formatDateShortWithWeekday(selectedDate, language)}
-                    </p>
-                  </div>
-                  <div className="info-block">
-                    <p className="info-block-label">{t('time')}</p>
-                    <p className="info-block-value text-[13px] sm:text-[15px]">{selectedTime}</p>
+                {/* Card with notch effect */}
+                <div 
+                  className="card overflow-hidden"
+                  style={{ 
+                    boxShadow: '0 10px 40px -10px rgb(var(--accent-500) / 0.15)',
+                  }}
+                >
+                  {/* Top accent bar */}
+                  <div className="h-1.5 bg-accent-solid" />
+                  
+                  <div className={`p-5 ${isRTL ? 'text-right' : 'text-left'}`}>
+                    {/* Service & Price */}
+                    <div className={`flex justify-between items-start mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <div>
+                        <p className="text-[10px] text-secondary uppercase tracking-wider mb-1">{t('service')}</p>
+                        <p className="text-[15px] font-bold text-primary">{serviceName}</p>
+                      </div>
+                      <div 
+                        className="px-3 py-1.5 rounded-lg bg-accent-light"
+                      >
+                        <p className="text-[16px] font-bold" style={{ color: 'rgb(var(--accent-600))' }}>₪{selectedService?.price}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Dashed separator */}
+                    <div className="border-t-2 border-dashed border-accent-200 my-4" />
+                    
+                    {/* Date & Time in row */}
+                    <div className={`flex gap-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <div className="flex-1">
+                        <p className="text-[10px] text-secondary uppercase tracking-wider mb-1">{t('date')}</p>
+                        <p className="text-[14px] font-semibold text-primary">
+                          {selectedDate && formatDateShortWithWeekday(selectedDate, language)}
+                        </p>
+                      </div>
+                      <div className="w-px bg-accent-200" />
+                      <div className="flex-1">
+                        <p className="text-[10px] text-secondary uppercase tracking-wider mb-1">{t('time')}</p>
+                        <p className="text-[14px] font-semibold text-primary">{selectedTime}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Info note */}
+              {/* WhatsApp note */}
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="text-[12px] sm:text-[13px] text-secondary mb-5 sm:mb-6"
+                transition={{ delay: 0.6 }}
+                className="text-[12px] sm:text-[13px] text-secondary mt-5 mb-6"
               >
                 {t('notifyWhatsapp')}
               </motion.p>
@@ -654,11 +854,11 @@ export default function BookingPage() {
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.3 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
               >
                 <button 
                   onClick={() => location.reload()} 
-                  className="btn-primary"
+                  className="btn-secondary px-6 py-3 text-[14px] font-semibold rounded-xl"
                 >
                   {t('submitAnother')}
                 </button>

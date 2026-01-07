@@ -4,7 +4,29 @@
 
 /* ===== THEME DEFINITIONS ===== */
 :root {
-  /* Default: Graphite (professional grey) */
+  /* Default: Sage (earthy green) */
+  --accent-50: 244 247 244;
+  --accent-100: 227 235 227;
+  --accent-200: 200 216 200;
+  --accent-300: 161 188 161;
+  --accent-400: 118 154 118;
+  --accent-500: 86 125 86;
+  --accent-600: 67 100 67;
+  --accent-700: 55 80 55;
+  --accent-800: 46 65 46;
+  --accent-900: 39 54 39;
+  
+  --bg-main: 247 247 246;
+  --bg-card: 255 255 255;
+  --text-primary: 49 49 47;
+  --text-secondary: 107 107 100;
+  
+  --btn-bg: 67 100 67;
+  --btn-bg-hover: 55 80 55;
+}
+
+/* Theme: Graphite (professional grey) */
+[data-theme="graphite"] {
   --accent-50: 244 244 245;
   --accent-100: 228 228 231;
   --accent-200: 212 212 216;
@@ -21,28 +43,8 @@
   --text-primary: 24 24 27;
   --text-secondary: 82 82 91;
   
-  /* Button uses darker shade for visibility */
   --btn-bg: 39 39 42;
   --btn-bg-hover: 24 24 27;
-}
-
-/* Theme: Sage (earthy green) */
-[data-theme="sage"] {
-  --accent-50: 244 247 244;
-  --accent-100: 227 235 227;
-  --accent-200: 200 216 200;
-  --accent-300: 161 188 161;
-  --accent-400: 118 154 118;
-  --accent-500: 86 125 86;
-  --accent-600: 67 100 67;
-  --accent-700: 55 80 55;
-  --accent-800: 46 65 46;
-  --accent-900: 39 54 39;
-  
-  --bg-main: 247 247 246;
-  --bg-card: 255 255 255;
-  --text-primary: 49 49 47;
-  --text-secondary: 107 107 100;
 }
 
 /* Theme: Ocean (deep blue/teal) */
@@ -62,6 +64,9 @@
   --bg-card: 255 255 255;
   --text-primary: 15 23 42;
   --text-secondary: 71 85 105;
+  
+  --btn-bg: 37 99 235;
+  --btn-bg-hover: 29 78 216;
 }
 
 /* Theme: Rose (warm pink/coral) */
@@ -81,6 +86,9 @@
   --bg-card: 255 255 255;
   --text-primary: 67 20 35;
   --text-secondary: 120 53 73;
+  
+  --btn-bg: 225 29 72;
+  --btn-bg-hover: 190 18 60;
 }
 
 /* Theme: Midnight (dark indigo/purple) */
@@ -100,6 +108,9 @@
   --bg-card: 255 255 255;
   --text-primary: 30 27 75;
   --text-secondary: 79 70 129;
+  
+  --btn-bg: 79 70 229;
+  --btn-bg-hover: 67 56 202;
 }
 
 /* Theme: Ember (warm orange/terracotta) */
@@ -119,6 +130,9 @@
   --bg-card: 255 255 255;
   --text-primary: 67 32 7;
   --text-secondary: 120 70 35;
+  
+  --btn-bg: 234 88 12;
+  --btn-bg-hover: 194 65 12;
 }
 
 /* Theme: Slate (elegant grey/neutral) */
@@ -138,33 +152,34 @@
   --bg-card: 255 255 255;
   --text-primary: 15 23 42;
   --text-secondary: 100 116 139;
+  
+  --btn-bg: 51 65 85;
+  --btn-bg-hover: 30 41 59;
 }
 
-/* Theme: Graphite (darker grey) */
-/* Graphite is now the default in :root */
+/* Sage is now the default theme in :root */
 
-/* Theme: Dark (sleek dark mode) */
+/* Theme: Dark (sleek neutral dark mode - like iOS) */
 [data-theme="dark"] {
-  --accent-50: 30 41 59;
-  --accent-100: 51 65 85;
-  --accent-200: 71 85 105;
-  --accent-300: 100 116 139;
-  --accent-400: 148 163 184;
-  --accent-500: 148 163 184;
-  --accent-600: 203 213 225;
-  --accent-700: 226 232 240;
-  --accent-800: 241 245 249;
-  --accent-900: 248 250 252;
+  --accent-50: 28 28 30;
+  --accent-100: 44 44 46;
+  --accent-200: 58 58 60;
+  --accent-300: 72 72 74;
+  --accent-400: 99 99 102;
+  --accent-500: 142 142 147;
+  --accent-600: 174 174 178;
+  --accent-700: 199 199 204;
+  --accent-800: 229 229 234;
+  --accent-900: 242 242 247;
   
-  --bg-main: 15 23 42;
-  --bg-card: 30 41 59;
-  --text-primary: 248 250 252;
-  --text-secondary: 148 163 184;
+  --bg-main: 0 0 0;
+  --bg-card: 28 28 30;
+  --text-primary: 255 255 255;
+  --text-secondary: 142 142 147;
   
-  /* Button - soft slate that fits the dark aesthetic */
-  --btn-bg: 71 85 105;
-  --btn-bg-hover: 100 116 139;
-  --btn-text: 248 250 252;
+  --btn-bg: 58 58 60;
+  --btn-bg-hover: 72 72 74;
+  --btn-text: 255 255 255;
 }
 
 /* Theme: Teal (cyan/turquoise) */
@@ -184,6 +199,9 @@
   --bg-card: 255 255 255;
   --text-primary: 19 78 74;
   --text-secondary: 15 118 110;
+  
+  --btn-bg: 13 148 136;
+  --btn-bg-hover: 15 118 110;
 }
 
 /* Theme: Wine (deep burgundy) */
@@ -203,6 +221,9 @@
   --bg-card: 255 255 255;
   --text-primary: 80 20 45;
   --text-secondary: 131 24 67;
+  
+  --btn-bg: 157 23 77;
+  --btn-bg-hover: 131 24 67;
 }
 
 /* Theme: Forest (deep green) */
@@ -222,6 +243,9 @@
   --bg-card: 255 255 255;
   --text-primary: 4 78 58;
   --text-secondary: 4 120 87;
+  
+  --btn-bg: 5 150 105;
+  --btn-bg-hover: 4 120 87;
 }
 
 /* Theme: Copper (warm brown/bronze) */
@@ -241,6 +265,9 @@
   --bg-card: 255 255 255;
   --text-primary: 69 35 17;
   --text-secondary: 120 53 15;
+  
+  --btn-bg: 146 64 14;
+  --btn-bg-hover: 120 53 15;
 }
 
 /* Theme: Violet (purple) */
@@ -260,6 +287,80 @@
   --bg-card: 255 255 255;
   --text-primary: 88 28 135;
   --text-secondary: 126 34 206;
+  
+  --btn-bg: 147 51 234;
+  --btn-bg-hover: 126 34 206;
+}
+
+/* ===== DARK THEMES ===== */
+
+/* Theme: Dark Ocean (subtle blue dark mode) */
+[data-theme="dark-ocean"] {
+  --accent-50: 17 24 39;
+  --accent-100: 30 41 59;
+  --accent-200: 51 65 85;
+  --accent-300: 71 85 105;
+  --accent-400: 100 116 139;
+  --accent-500: 148 163 184;
+  --accent-600: 176 190 206;
+  --accent-700: 203 213 225;
+  --accent-800: 226 232 240;
+  --accent-900: 241 245 249;
+  
+  --bg-main: 10 15 25;
+  --bg-card: 20 28 42;
+  --text-primary: 226 232 240;
+  --text-secondary: 148 163 184;
+  
+  --btn-bg: 51 85 120;
+  --btn-bg-hover: 65 100 140;
+  --btn-text: 226 232 240;
+}
+
+/* Theme: Dark Emerald (subtle green dark mode) */
+[data-theme="dark-forest"] {
+  --accent-50: 17 28 24;
+  --accent-100: 28 42 36;
+  --accent-200: 42 58 52;
+  --accent-300: 60 80 72;
+  --accent-400: 85 110 98;
+  --accent-500: 120 145 135;
+  --accent-600: 156 176 168;
+  --accent-700: 190 205 198;
+  --accent-800: 218 228 224;
+  --accent-900: 240 245 243;
+  
+  --bg-main: 12 18 16;
+  --bg-card: 22 32 28;
+  --text-primary: 218 228 224;
+  --text-secondary: 120 145 135;
+  
+  --btn-bg: 50 85 70;
+  --btn-bg-hover: 65 100 85;
+  --btn-text: 218 228 224;
+}
+
+/* Theme: Dark Warm (subtle warm/sepia dark mode) */
+[data-theme="dark-rose"] {
+  --accent-50: 28 24 22;
+  --accent-100: 42 36 32;
+  --accent-200: 58 50 45;
+  --accent-300: 78 68 62;
+  --accent-400: 105 92 85;
+  --accent-500: 140 125 118;
+  --accent-600: 172 158 150;
+  --accent-700: 200 188 182;
+  --accent-800: 225 218 214;
+  --accent-900: 245 242 240;
+  
+  --bg-main: 18 15 14;
+  --bg-card: 32 28 26;
+  --text-primary: 225 218 214;
+  --text-secondary: 140 125 118;
+  
+  --btn-bg: 95 75 65;
+  --btn-bg-hover: 110 90 78;
+  --btn-text: 225 218 214;
 }
 
 @layer base {
@@ -536,5 +637,16 @@
 
   .animate-celebrate {
     animation: celebrate-bounce 1s ease-in-out infinite;
+  }
+
+  /* Shake animation for errors */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+  }
+
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
   }
 }

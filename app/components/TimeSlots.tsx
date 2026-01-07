@@ -115,7 +115,7 @@ export default function TimeSlots({ slots, selectedTime, onSelectTime, isLoading
                       transition={{ type: "spring", stiffness: 500, damping: 25 }}
                       className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} w-[18px] h-[18px] rounded-full flex items-center justify-center`}
                       style={{ 
-                        backgroundColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgb(var(--btn-bg))',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
                       }}
                     >

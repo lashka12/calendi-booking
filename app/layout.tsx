@@ -38,9 +38,9 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  // Theme - default to graphite
-                  var theme = localStorage.getItem('theme') || 'graphite';
-                  if (theme !== 'graphite') {
+                  // Theme - default to sage
+                  var theme = localStorage.getItem('theme') || 'sage';
+                  if (theme !== 'sage') {
                     document.documentElement.setAttribute('data-theme', theme);
                   }
                   // Language & RTL - default to English

@@ -92,7 +92,20 @@ export async function verifyOTP(phone: string, code: string): Promise<{ success:
   }
 }
 
-export async function createBooking(booking: BookingDetails): Promise<{ success: boolean; bookingId?: string }> {
+// OTP Error codes from createPendingRequest
+export type OTPErrorCode = 'OTP_NOT_FOUND' | 'OTP_EXPIRED' | 'OTP_TOO_MANY_ATTEMPTS' | 'OTP_INVALID_CODE';
+
+export interface BookingResponse {
+  success: boolean;
+  bookingId?: string;
+  message?: string;
+  // Error fields
+  code?: OTPErrorCode;
+  error?: string;
+  attemptsLeft?: number;
+}
+
+export async function createBooking(booking: BookingDetails): Promise<BookingResponse> {
   try {
     const createBookingFn = httpsCallable(functions, 'createPendingRequest');
     const result = await createBookingFn({
@@ -103,7 +116,7 @@ export async function createBooking(booking: BookingDetails): Promise<{ success:
       serviceId: booking.serviceId,
       code: booking.code, // OTP code - verified internally by the function
     });
-    return result.data as { success: boolean; bookingId?: string };
+    return result.data as BookingResponse;
   } catch (error: any) {
     console.error('Error creating booking:', error);
     throw error;

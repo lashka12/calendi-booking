@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const themes = [
-  { id: 'graphite', name: 'Graphite', color: '#3f3f46' },
+  // Light themes
   { id: 'sage', name: 'Sage', color: '#567d56' },
+  { id: 'graphite', name: 'Graphite', color: '#3f3f46' },
   { id: 'ocean', name: 'Ocean', color: '#3b82f6' },
   { id: 'rose', name: 'Rose', color: '#f43f5e' },
   { id: 'midnight', name: 'Midnight', color: '#6366f1' },
@@ -16,7 +17,11 @@ const themes = [
   { id: 'copper', name: 'Copper', color: '#b45309' },
   { id: 'violet', name: 'Violet', color: '#a855f7' },
   { id: 'slate', name: 'Slate', color: '#64748b' },
-  { id: 'dark', name: 'Dark', color: '#0f172a', isDark: true },
+  // Dark themes (softer, real-world dark modes)
+  { id: 'dark', name: 'Dark', color: '#1c1c1e', isDark: true },
+  { id: 'dark-ocean', name: 'Dark Ocean', color: '#141c2a', isDark: true },
+  { id: 'dark-forest', name: 'Dark Emerald', color: '#16201c', isDark: true },
+  { id: 'dark-rose', name: 'Dark Warm', color: '#201c1a', isDark: true },
 ];
 
 export default function ThemeSwitcher() {
@@ -26,14 +31,14 @@ export default function ThemeSwitcher() {
   useEffect(() => {
     // Read from DOM first (set by the inline script), then localStorage
     const domTheme = document.documentElement.getAttribute('data-theme');
-    const saved = domTheme || localStorage.getItem('theme') || 'graphite';
-    setCurrentTheme(saved === '' ? 'graphite' : saved);
+    const saved = domTheme || localStorage.getItem('theme') || 'sage';
+    setCurrentTheme(saved === '' ? 'sage' : saved);
   }, []);
 
   const selectTheme = (themeId: string) => {
     setCurrentTheme(themeId);
     localStorage.setItem('theme', themeId);
-    document.documentElement.setAttribute('data-theme', themeId === 'graphite' ? '' : themeId);
+    document.documentElement.setAttribute('data-theme', themeId === 'sage' ? '' : themeId);
     setIsOpen(false);
   };
 
@@ -51,7 +56,7 @@ export default function ThemeSwitcher() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="absolute bottom-14 right-0 rounded-2xl shadow-xl border p-2 min-w-[140px]"
+            className="absolute bottom-14 right-0 rounded-2xl shadow-xl border p-2 min-w-[160px] max-h-[70vh] overflow-y-auto"
             style={{
               backgroundColor: 'rgb(var(--bg-card))',
               borderColor: 'rgb(var(--accent-200))'
