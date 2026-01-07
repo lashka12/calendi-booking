@@ -412,7 +412,8 @@
     @apply h-10 sm:h-11 px-4 sm:px-5 text-[13px] sm:text-sm font-medium rounded-lg sm:rounded-xl
            border shadow-card
            transition-all duration-150
-           active:scale-[0.98];
+           active:scale-[0.98]
+           inline-flex items-center justify-center;
     background-color: rgb(var(--bg-card));
     color: rgb(var(--text-primary));
     border-color: rgb(var(--accent-200));
@@ -454,10 +455,30 @@
     border-color: rgb(var(--accent-100) / 0.5);
   }
 
-  /* Skeleton */
+  /* Skeleton with shimmer effect */
   .skeleton {
-    @apply animate-pulse rounded-[12px] sm:rounded-[14px];
+    @apply rounded-[12px] sm:rounded-[14px] relative overflow-hidden;
     background-color: rgb(var(--accent-100));
+  }
+  
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--accent-50) / 0.6),
+      transparent
+    );
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
   }
   
   /* Theme-aware accent backgrounds */

@@ -354,7 +354,20 @@ export default function BookingPage() {
               {loading ? (
                 <div className="space-y-3">
                   {[1,2,3].map(i => (
-                    <div key={i} className="h-[120px] rounded-2xl skeleton" />
+                    <div key={i} className="card p-4 rounded-[18px]">
+                      <div className="flex items-start gap-4">
+                        <div className="w-6 h-6 rounded-full skeleton flex-shrink-0" />
+                        <div className="flex-1 space-y-3">
+                          <div className="h-4 w-3/4 skeleton rounded-lg" />
+                          <div className="h-3 w-1/2 skeleton rounded-lg" />
+                          <div className="border-t border-accent-100 my-3" />
+                          <div className="flex justify-between items-center">
+                            <div className="h-3 w-16 skeleton rounded-lg" />
+                            <div className="h-7 w-14 skeleton rounded-full" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : loadError ? (
@@ -851,18 +864,15 @@ export default function BookingPage() {
               </motion.p>
 
               {/* Action Button */}
-              <motion.div
+              <motion.button
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
+                onClick={() => location.reload()} 
+                className="btn-secondary px-6 py-3 text-[14px] font-semibold rounded-xl"
               >
-                <button 
-                  onClick={() => location.reload()} 
-                  className="btn-secondary px-6 py-3 text-[14px] font-semibold rounded-xl"
-                >
-                  {t('submitAnother')}
-                </button>
-              </motion.div>
+                {t('submitAnother')}
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -873,7 +883,12 @@ export default function BookingPage() {
         <footer className="fixed bottom-0 inset-x-0 border-t border-accent safe-bottom" style={{ backgroundColor: 'rgb(var(--bg-main))' }}>
           <div className="max-w-lg mx-auto px-4 py-3" dir="ltr">
             <button onClick={next} disabled={!canContinue() || otpSending} className="btn-primary">
-              {otpSending ? t('sendingCode') : (
+              {otpSending ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  {t('sendingCode')}
+                </span>
+              ) : (
                 isRTL ? (
                   <><ChevronRight className="w-5 h-5 -ml-1 rotate-180" />{t('continue')}</>
                 ) : (

@@ -81,7 +81,6 @@ export default function Calendar({ selectedDate, onSelectDate, minDate, language
   const isDateDisabled = (date: Date) => {
     if (!date) return true;
     if (isPastDate(date)) return true;
-    if (date.getDay() === 6) return true;
     return false;
   };
 
