@@ -38,11 +38,9 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  // Theme - default to sage
-                  var theme = localStorage.getItem('theme') || 'sage';
-                  if (theme !== 'sage') {
-                    document.documentElement.setAttribute('data-theme', theme);
-                  }
+                  // Theme - default to wine
+                  var theme = localStorage.getItem('theme') || 'wine';
+                  document.documentElement.setAttribute('data-theme', theme);
                   // Language & RTL - default to English
                   var lang = localStorage.getItem('language') || 'en';
                   if (lang && ['en', 'he', 'ar'].includes(lang)) {
@@ -59,7 +57,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased min-h-screen bg-main text-primary">
         <LanguageProvider>
-          {children}
+        {children}
           <LanguageSwitcher />
           <ThemeSwitcher />
         </LanguageProvider>

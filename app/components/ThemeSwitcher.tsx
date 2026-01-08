@@ -31,8 +31,8 @@ export default function ThemeSwitcher() {
   useEffect(() => {
     // Read from DOM first (set by the inline script), then localStorage
     const domTheme = document.documentElement.getAttribute('data-theme');
-    const saved = domTheme || localStorage.getItem('theme') || 'sage';
-    setCurrentTheme(saved === '' ? 'sage' : saved);
+    const saved = domTheme || localStorage.getItem('theme') || 'wine';
+    setCurrentTheme(saved === '' ? 'wine' : saved);
   }, []);
 
   const selectTheme = (themeId: string) => {
