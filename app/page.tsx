@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Check, AlertCircle, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -125,8 +125,12 @@ export default function BookingPage() {
   const langCode = language === 'he' ? 'he' : language === 'ar' ? 'ar' : 'en';
   const serviceName = selectedService ? getServiceName(selectedService, langCode) : '';
 
-  // Load services
+  // Load services (with ref to prevent double-call in StrictMode)
+  const hasFetchedServices = useRef(false);
   useEffect(() => {
+    if (hasFetchedServices.current) return;
+    hasFetchedServices.current = true;
+    
     (async () => {
       try {
         const data = await getServices();
@@ -435,15 +439,15 @@ export default function BookingPage() {
 
           {/* Step 4: Details */}
           {step === 4 && (
-            <motion.div key="s4" {...pageTransition} className="px-4 min-h-[calc(100vh-180px)] flex flex-col justify-center">
+            <motion.div key="s4" {...pageTransition} className="px-4 pt-4">
               {/* Header */}
-              <div className="text-center mb-6">
-                <h1 className="text-[24px] sm:text-[28px] font-bold text-primary mb-2">{t('almostThere')}</h1>
-                <p className="text-[14px] text-secondary">{t('enterYourDetails')}</p>
+              <div className="text-center mb-4">
+                <h1 className="text-[22px] sm:text-[26px] font-bold text-primary mb-1">{t('almostThere')}</h1>
+                <p className="text-[13px] text-secondary">{t('enterYourDetails')}</p>
               </div>
 
               {/* Compact Booking Summary - Inline */}
-              <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
                   <svg className="w-4 h-4" style={{ color: 'rgb(var(--accent-500))' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -462,10 +466,10 @@ export default function BookingPage() {
               </div>
 
               {/* Form */}
-              <div className="space-y-5 px-6 sm:px-8">
+              <div className="space-y-4 px-4 sm:px-6">
                 {/* Name Input */}
                 <div>
-                  <label className="block text-[11px] font-bold text-secondary uppercase tracking-wide mb-2">
+                  <label className="block text-[11px] font-bold text-secondary uppercase tracking-wide mb-1.5">
                     {t('fullName')}
                   </label>
                   <div className="relative">
@@ -480,7 +484,7 @@ export default function BookingPage() {
                       onChange={e => setName(e.target.value)}
                       placeholder={t('enterYourName')}
                       dir={isRTL ? 'rtl' : 'ltr'}
-                      className={`w-full h-[52px] ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-[15px] rounded-xl transition-all duration-200 outline-none border`}
+                      className={`w-full h-[46px] ${isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4'} text-[15px] rounded-xl transition-all duration-200 outline-none border`}
                       style={{ 
                         backgroundColor: 'rgb(var(--accent-50))',
                         color: 'rgb(var(--text-primary))',
@@ -503,7 +507,7 @@ export default function BookingPage() {
 
                 {/* Phone Input */}
                 <div>
-                  <label className="block text-[11px] font-bold text-secondary uppercase tracking-wide mb-2">
+                  <label className="block text-[11px] font-bold text-secondary uppercase tracking-wide mb-1.5">
                     {t('whatsappNumber')}
                   </label>
                   <div className="relative">
@@ -518,7 +522,7 @@ export default function BookingPage() {
                       value={phone}
                       onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
                       placeholder="05X XXX XXXX"
-                      className={`w-full h-[52px] ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-[15px] tracking-wide rounded-xl transition-all duration-200 outline-none font-medium border`}
+                      className={`w-full h-[46px] ${isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4'} text-[15px] tracking-wide rounded-xl transition-all duration-200 outline-none font-medium border`}
                       style={{ 
                         backgroundColor: 'rgb(var(--accent-50))',
                         color: 'rgb(var(--text-primary))',

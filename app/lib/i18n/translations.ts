@@ -28,8 +28,8 @@ export const translations = {
     available: 'available',
     
     // Step 4: Details
-    almostThere: 'Almost there!',
-    enterYourDetails: 'Just need a few details to confirm your booking',
+    almostThere: 'Your Details',
+    enterYourDetails: 'Enter your contact information',
     yourAppointment: 'Your Appointment',
     date: 'Date',
     time: 'Time',
@@ -124,8 +124,8 @@ export const translations = {
     available: 'זמינים',
     
     // Step 4: Details
-    almostThere: 'כמעט שם!',
-    enterYourDetails: 'רק כמה פרטים לאישור ההזמנה',
+    almostThere: 'הפרטים שלך',
+    enterYourDetails: 'הזן את פרטי הקשר שלך',
     yourAppointment: 'התור שלך',
     date: 'תאריך',
     time: 'שעה',
@@ -220,8 +220,8 @@ export const translations = {
     available: 'متاح',
     
     // Step 4: Details
-    almostThere: 'أوشكت على الانتهاء!',
-    enterYourDetails: 'نحتاج بعض التفاصيل لتأكيد حجزك',
+    almostThere: 'بياناتك',
+    enterYourDetails: 'أدخل معلومات الاتصال الخاصة بك',
     yourAppointment: 'موعدك',
     date: 'التاريخ',
     time: 'الوقت',

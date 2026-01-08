@@ -74,18 +74,12 @@ export default function TimeSlots({ slots, selectedTime, onSelectTime, isLoading
             return (
               <motion.button
                 key={time}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ 
-                  duration: 0.2, 
-                  delay: startDelay + index * 0.02,
-                  ease: [0.25, 0.46, 0.45, 0.94]
-                }}
+                initial={false}
                 onClick={() => onSelectTime(time)}
                 whileTap={{ scale: 0.95 }}
                 className={`
                   relative h-12 rounded-xl text-[14px] font-semibold tabular-nums
-                  transition-all duration-200
+                  transition-all duration-200 animate-cardEntrance
                   ${isSelected 
                     ? 'text-white shadow-lg' 
                     : 'text-primary'
@@ -100,7 +94,8 @@ export default function TimeSlots({ slots, selectedTime, onSelectTime, isLoading
                     : '1px solid rgb(var(--accent-200))',
                   boxShadow: isSelected 
                     ? '0 4px 12px rgb(var(--accent-500) / 0.3)'
-                    : 'none'
+                    : 'none',
+                  animationDelay: `${index * 30}ms`
                 }}
               >
                 {time}

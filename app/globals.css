@@ -481,6 +481,35 @@
     }
   }
   
+  /* Entrance animations */
+  @keyframes cardEntrance {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .animate-cardEntrance {
+    animation: cardEntrance 0.3s ease-out both;
+  }
+  
+  @keyframes slotEntrance {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-slotEntrance {
+    animation: slotEntrance 0.2s ease-out both;
+  }
+  
   /* Theme-aware accent backgrounds */
   .bg-accent-light {
     background-color: rgb(var(--accent-50));

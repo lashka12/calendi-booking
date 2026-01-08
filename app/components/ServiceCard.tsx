@@ -22,18 +22,12 @@ export default function ServiceCard({ service, isSelected, onSelect, index, lang
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        duration: 0.4, 
-        delay: index * 0.08,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }}
+      initial={false}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.98 }}
       onClick={onSelect}
       className={`
-        w-full relative overflow-hidden rounded-2xl transition-all duration-300
+        w-full relative overflow-hidden rounded-2xl transition-all duration-300 animate-cardEntrance
         ${isSelected 
           ? 'ring-2 shadow-lg' 
           : 'hover:shadow-md'
@@ -42,6 +36,7 @@ export default function ServiceCard({ service, isSelected, onSelect, index, lang
       style={{ 
         '--tw-ring-color': isSelected ? 'rgb(var(--accent-500))' : 'transparent',
         backgroundColor: isSelected ? 'rgb(var(--accent-50))' : 'rgb(var(--bg-card))',
+        animationDelay: `${index * 80}ms`,
       } as React.CSSProperties}
     >
       <div className="p-4" dir={isRTL ? 'rtl' : 'ltr'}>
