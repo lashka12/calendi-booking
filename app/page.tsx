@@ -104,11 +104,11 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
   ];
   
   const showcaseItems = [
-    { image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=500&fit=crop', label: t('gelArt') },
-    { image: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?w=400&h=500&fit=crop', label: t('frenchTips') },
-    { image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=400&h=500&fit=crop', label: t('chrome') },
-    { image: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=400&h=500&fit=crop', label: t('ombre') },
-    { image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=500&fit=crop', label: t('minimalist') },
+    'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?w=400&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=400&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=400&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=500&fit=crop',
   ];
   
   const services = [
@@ -324,25 +324,20 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
           className="flex gap-3 md:gap-4 px-5 md:justify-center overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide animate-fadeIn animation-delay-400"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {showcaseItems.map((item) => (
+          {showcaseItems.map((image, index) => (
             <div
-              key={item.label}
+              key={index}
               className="flex-shrink-0 snap-center group cursor-pointer active:scale-[0.98] transition-transform"
             >
               <div 
                 className="relative w-36 h-44 md:w-48 md:h-60 lg:w-56 lg:h-72 rounded-3xl overflow-hidden shadow-lg"
                 style={{ boxShadow: '0 8px 32px -12px rgba(0,0,0,0.25)' }}
               >
-                {/* Image */}
                 <img 
-                  src={item.image} 
-                  alt={item.label}
+                  src={image} 
+                  alt="Nail art showcase"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                {/* Label */}
-                <span className="absolute bottom-4 left-4 text-[14px] md:text-[16px] font-semibold text-white drop-shadow-md">{item.label}</span>
               </div>
             </div>
           ))}
