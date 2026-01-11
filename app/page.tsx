@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Check, AlertCircle, X } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 import ProgressBar from '@/app/components/ProgressBar';
 import ServiceCard from '@/app/components/ServiceCard';
@@ -14,6 +14,7 @@ import {
   Service, 
   getServices, 
   getAvailableTimeSlots, 
+  getAvailableDatesInRange,
   sendOTP, 
   createBooking,
   getServiceName,
@@ -157,7 +158,7 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
           borderBottom: isScrolled ? '1px solid rgb(var(--accent-100))' : 'none'
         }}
       >
-        <div className="max-w-lg mx-auto px-5 flex items-center justify-between">
+        <div className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-5 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
             <div 
@@ -235,10 +236,10 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
           }}
         />
         
-        <div className="relative max-w-lg mx-auto pt-4">
+        <div className="relative max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto pt-4">
           {/* Main Heading */}
-          <div className="text-center mb-8 animate-fadeInUp">
-            <h1 className="text-[40px] sm:text-[52px] font-bold text-primary leading-[1.05] tracking-tight mb-5">
+          <div className="text-center mb-8 md:mb-12 animate-fadeInUp">
+            <h1 className="text-[40px] sm:text-[52px] md:text-[64px] lg:text-[72px] font-bold text-primary leading-[1.05] tracking-tight mb-5 md:mb-6">
               {t('nailArt')}
               <br />
               <span 
@@ -247,7 +248,7 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
               >
                 {t('redefined')}
                 <svg 
-                  className="absolute -bottom-1 left-0 w-full h-3" 
+                  className="absolute -bottom-1 md:-bottom-2 left-0 w-full h-3 md:h-4" 
                   viewBox="0 0 200 12" 
                   fill="none"
                 >
@@ -261,7 +262,7 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
                 </svg>
               </span>
             </h1>
-            <p className="text-[16px] sm:text-[17px] text-secondary max-w-[300px] mx-auto leading-relaxed">
+            <p className="text-[16px] sm:text-[17px] md:text-[18px] lg:text-[20px] text-secondary max-w-[300px] md:max-w-[450px] mx-auto leading-relaxed">
               {t('heroDescription')}
             </p>
           </div>
@@ -285,7 +286,7 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
           </div>
 
           {/* Trust Indicators */}
-          <div className="flex items-center justify-center gap-4 sm:gap-6 animate-fadeIn animation-delay-200">
+          <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-12 lg:gap-16 animate-fadeIn animation-delay-200">
             {[
               { value: '4.9', label: t('rating'), hasStars: true },
               { value: '500+', label: t('clients') },
@@ -293,17 +294,17 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="text-center px-3 sm:px-4"
+                className="text-center px-3 sm:px-4 md:px-6"
               >
                 <div className="flex items-center justify-center gap-1">
-                  <span className="text-[20px] sm:text-[24px] font-bold text-primary">{stat.value}</span>
+                  <span className="text-[20px] sm:text-[24px] md:text-[28px] lg:text-[32px] font-bold text-primary">{stat.value}</span>
                   {stat.hasStars && (
-                    <svg className="w-4 h-4" style={{ color: 'rgb(var(--accent-500))' }} fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" style={{ color: 'rgb(var(--accent-500))' }} fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   )}
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-secondary uppercase tracking-wider mt-0.5">{stat.label}</p>
+                <p className="text-[10px] sm:text-[11px] md:text-[12px] text-secondary uppercase tracking-wider mt-0.5">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -311,16 +312,16 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
       </section>
 
       {/* Visual Showcase - Horizontal Scroll */}
-      <section className="py-10 overflow-hidden">
+      <section className="py-10 md:py-16 overflow-hidden">
         <div className="mb-5 px-5 animate-fadeIn animation-delay-300">
-          <div className="max-w-lg mx-auto flex items-center justify-between">
-            <h2 className="text-[18px] font-semibold text-primary">{t('ourWork')}</h2>
-            <span className="text-[12px] text-secondary">{t('swipeToExplore')} {isRTL ? '←' : '→'}</span>
+          <div className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto flex items-center justify-between">
+            <h2 className="text-[18px] md:text-[22px] font-semibold text-primary">{t('ourWork')}</h2>
+            <span className="text-[12px] md:text-[14px] text-secondary">{t('swipeToExplore')} {isRTL ? '←' : '→'}</span>
           </div>
         </div>
         
         <div 
-          className="flex gap-3 px-5 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide animate-fadeIn animation-delay-400"
+          className="flex gap-3 md:gap-4 px-5 md:justify-center overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide animate-fadeIn animation-delay-400"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {showcaseItems.map((item) => (
@@ -329,7 +330,7 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
               className="flex-shrink-0 snap-center group cursor-pointer active:scale-[0.98] transition-transform"
             >
               <div 
-                className="relative w-36 h-44 rounded-3xl overflow-hidden shadow-lg"
+                className="relative w-36 h-44 md:w-48 md:h-60 lg:w-56 lg:h-72 rounded-3xl overflow-hidden shadow-lg"
                 style={{ boxShadow: '0 8px 32px -12px rgba(0,0,0,0.25)' }}
               >
                 {/* Image */}
@@ -341,7 +342,7 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 {/* Label */}
-                <span className="absolute bottom-4 left-4 text-[14px] font-semibold text-white drop-shadow-md">{item.label}</span>
+                <span className="absolute bottom-4 left-4 text-[14px] md:text-[16px] font-semibold text-white drop-shadow-md">{item.label}</span>
               </div>
             </div>
           ))}
@@ -349,16 +350,16 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
       </section>
 
       {/* Services */}
-      <section className="py-10 px-5">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-6">
+      <section className="py-10 md:py-16 px-5">
+        <div className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
             <div>
-              <h2 className="text-[22px] font-bold text-primary">{t('services')}</h2>
-              <p className="text-[13px] text-secondary mt-0.5">{t('popularTreatments')}</p>
+              <h2 className="text-[22px] md:text-[28px] font-bold text-primary">{t('services')}</h2>
+              <p className="text-[13px] md:text-[15px] text-secondary mt-0.5">{t('popularTreatments')}</p>
             </div>
             <button 
               onClick={onBookNow}
-              className="text-[13px] font-medium flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors"
+              className="text-[13px] md:text-[14px] font-medium flex items-center gap-1 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors"
               style={{ 
                 color: 'rgb(var(--accent-600))',
                 backgroundColor: 'rgb(var(--accent-100))'
@@ -371,12 +372,12 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:space-y-0">
             {services.map((service) => (
               <div
                 key={service.name}
                 onClick={onBookNow}
-                className="relative card p-4 rounded-2xl cursor-pointer transition-all group overflow-hidden active:scale-[0.99]"
+                className="relative card p-4 md:p-5 rounded-2xl cursor-pointer transition-all group overflow-hidden active:scale-[0.99] hover:shadow-lg"
                 style={{
                   boxShadow: service.popular 
                     ? '0 4px 24px -6px rgb(var(--accent-500) / 0.25)' 
@@ -396,12 +397,12 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
                   </div>
                 )}
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between md:flex-col md:items-start md:gap-3">
                   {/* Content */}
-                  <div className="flex-1 min-w-0 pr-3">
-                    <h3 className="text-[15px] font-semibold text-primary">{service.name}</h3>
-                    <p className="text-[12px] text-secondary mt-0.5">{service.desc}</p>
-                    <p className="text-[11px] text-secondary mt-1 flex items-center gap-1">
+                  <div className="flex-1 min-w-0 pr-3 md:pr-0">
+                    <h3 className="text-[15px] md:text-[17px] font-semibold text-primary">{service.name}</h3>
+                    <p className="text-[12px] md:text-[13px] text-secondary mt-0.5">{service.desc}</p>
+                    <p className="text-[11px] md:text-[12px] text-secondary mt-1 flex items-center gap-1">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -410,9 +411,9 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
                   </div>
                   
                   {/* Price */}
-                  <div className="text-right shrink-0">
+                  <div className="text-right md:text-left shrink-0 md:w-full md:pt-2 md:border-t md:border-dashed" style={{ borderColor: 'rgb(var(--accent-100))' }}>
                     <span 
-                      className="text-[18px] font-bold"
+                      className="text-[18px] md:text-[20px] font-bold"
                       style={{ color: 'rgb(var(--accent-600))' }}
                     >
                       {service.price}
@@ -426,15 +427,15 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
       </section>
 
       {/* Testimonials */}
-      <section className="py-10 px-5">
-        <div className="max-w-lg mx-auto">
-          <div className="text-center mb-5">
-            <h2 className="text-[22px] font-bold text-primary">{t('clientLove')}</h2>
-            <p className="text-[13px] text-secondary mt-1">{t('whatClientsSay')}</p>
+      <section className="py-10 md:py-16 px-5">
+        <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
+          <div className="text-center mb-5 md:mb-8">
+            <h2 className="text-[22px] md:text-[28px] font-bold text-primary">{t('clientLove')}</h2>
+            <p className="text-[13px] md:text-[15px] text-secondary mt-1">{t('whatClientsSay')}</p>
           </div>
           
           <div
-            className="relative rounded-3xl p-6 pb-5 overflow-hidden"
+            className="relative rounded-3xl p-6 md:p-8 pb-5 overflow-hidden"
             style={{ 
               backgroundColor: 'rgb(var(--accent-50))',
               border: '1px solid rgb(var(--accent-100))'
@@ -519,11 +520,11 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
       </section>
 
       {/* Location & Hours */}
-      <section className="py-10 px-5 pb-32">
-        <div className="max-w-lg mx-auto">
-          <div className="text-center mb-6">
-            <h2 className="text-[22px] font-bold text-primary">{t('findUs')}</h2>
-            <p className="text-[13px] text-secondary mt-1">{t('locatedIn')}</p>
+      <section className="py-10 md:py-16 px-5 pb-32">
+        <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
+          <div className="text-center mb-6 md:mb-8">
+            <h2 className="text-[22px] md:text-[28px] font-bold text-primary">{t('findUs')}</h2>
+            <p className="text-[13px] md:text-[15px] text-secondary mt-1">{t('locatedIn')}</p>
           </div>
           
           {/* Location Card */}
@@ -618,12 +619,12 @@ function LandingPage({ onBookNow }: { onBookNow: () => void }) {
 
       {/* Floating Book Button */}
       <div className="fixed bottom-6 inset-x-0 px-5 z-50 animate-fadeInUp animation-delay-500">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg md:max-w-md mx-auto">
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             onClick={onBookNow}
-            className="relative w-full py-4 rounded-2xl text-[15px] font-semibold text-white overflow-hidden group"
+            className="relative w-full py-4 md:py-5 rounded-2xl text-[15px] md:text-[16px] font-semibold text-white overflow-hidden group"
             style={{ 
               backgroundColor: 'rgb(var(--btn-bg))',
               boxShadow: '0 20px 50px -15px rgb(var(--accent-500) / 0.7), 0 4px 20px -5px rgb(var(--accent-500) / 0.4)'
@@ -665,6 +666,11 @@ export default function BookingPage() {
   const [slots, setSlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   
+  // Available dates state for Step 2
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
+  const [availableDatesLoading, setAvailableDatesLoading] = useState(false);
+  const [availableDatesError, setAvailableDatesError] = useState(false);
+  
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   
@@ -703,8 +709,49 @@ export default function BookingPage() {
     })();
   }, []);
 
-  // Load slots
+  // Fetch available dates for a given date range
+  const fetchAvailableDates = useCallback(async (startDate: string, endDate: string, serviceId: string) => {
+    setAvailableDatesLoading(true);
+    setAvailableDatesError(false);
+    try {
+      const result = await getAvailableDatesInRange(startDate, endDate, serviceId);
+      setAvailableDates(result.availableDates || []);
+    } catch (error) {
+      console.error('Error fetching available dates:', error);
+      setAvailableDatesError(true);
+      setAvailableDates([]);
+    } finally {
+      setAvailableDatesLoading(false);
+    }
+  }, []);
+
+  // Load available dates when entering Step 2
   const serviceId = selectedService?.id;
+  useEffect(() => {
+    if (step !== 2 || !serviceId) return;
+    
+    // Fetch available dates for current month
+    const now = new Date();
+    const start = format(startOfMonth(now), 'yyyy-MM-dd');
+    const end = format(endOfMonth(now), 'yyyy-MM-dd');
+    fetchAvailableDates(start, end, serviceId);
+  }, [step, serviceId, fetchAvailableDates]);
+
+  // Handle month change in calendar
+  const handleCalendarMonthChange = useCallback((startDate: string, endDate: string) => {
+    if (serviceId) {
+      fetchAvailableDates(startDate, endDate, serviceId);
+    }
+  }, [serviceId, fetchAvailableDates]);
+
+  // Retry fetching available dates
+  const handleRetryAvailableDates = useCallback(() => {
+    if (!serviceId) return;
+    const now = new Date();
+    const start = format(startOfMonth(now), 'yyyy-MM-dd');
+    const end = format(endOfMonth(now), 'yyyy-MM-dd');
+    fetchAvailableDates(start, end, serviceId);
+  }, [serviceId, fetchAvailableDates]);
   useEffect(() => {
     if (step !== 3 || !selectedDate || !serviceId) return;
     
@@ -777,6 +824,11 @@ export default function BookingPage() {
     setOtpSuccess(false);
     setToastError(null);
     if (step === 3) setSelectedTime(null);
+    if (step === 2) {
+      setSelectedDate(null);
+      setAvailableDates([]);
+      setAvailableDatesError(false);
+    }
   };
 
   const resend = async () => {
@@ -869,6 +921,8 @@ export default function BookingPage() {
     setSelectedService(null);
     setSelectedDate(null);
     setSelectedTime(null);
+    setAvailableDates([]);
+    setAvailableDatesError(false);
     setName('');
     setPhone('');
     window.scrollTo(0, 0);
@@ -880,10 +934,14 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-main">
+    <div className="min-h-screen bg-main md:flex md:items-start md:justify-center md:py-8 lg:py-12" style={{ background: 'rgb(var(--bg-main))' }}>
+      {/* Desktop background decoration */}
+      <div className="hidden md:block fixed inset-0 -z-10 overflow-hidden" style={{ background: `linear-gradient(135deg, rgb(var(--accent-50)) 0%, rgb(var(--bg-main)) 50%, rgb(var(--accent-50)) 100%)` }} />
+      {/* Desktop wrapper for centered card effect */}
+      <div className="w-full md:max-w-lg lg:max-w-xl md:mx-auto md:rounded-3xl md:shadow-xl md:overflow-hidden md:border" style={{ backgroundColor: 'rgb(var(--bg-main))', borderColor: 'rgb(var(--accent-100))' }}>
       {/* Header - hidden on success page */}
       {step < 6 && (
-        <header className="sticky top-0 z-50 backdrop-blur-lg" style={{ backgroundColor: 'rgb(var(--bg-main) / 0.9)' }}>
+        <header className="sticky top-0 z-50 backdrop-blur-lg md:rounded-t-3xl" style={{ backgroundColor: 'rgb(var(--bg-main) / 0.9)' }}>
           <div className="max-w-lg mx-auto h-14 px-4 flex items-center justify-between" dir="ltr">
             {/* Left side - back button in LTR, empty in RTL */}
             {isRTL ? (
@@ -1017,7 +1075,17 @@ export default function BookingPage() {
                 <h1 className="text-[20px] sm:text-[22px] md:text-[26px] font-bold text-primary mb-1">{t('chooseDate')}</h1>
                 <p className="text-[13px] sm:text-[14px] text-secondary">{serviceName} · {selectedService?.duration} {t('minutes')}</p>
               </div>
-              <Calendar selectedDate={selectedDate} onSelectDate={setSelectedDate} minDate={new Date()} language={language} />
+              <Calendar 
+                selectedDate={selectedDate} 
+                onSelectDate={setSelectedDate} 
+                minDate={new Date()} 
+                language={language}
+                availableDates={availableDates}
+                isLoading={availableDatesLoading}
+                hasError={availableDatesError}
+                onRetry={handleRetryAvailableDates}
+                onMonthChange={handleCalendarMonthChange}
+              />
             </motion.div>
           )}
 
@@ -1476,8 +1544,8 @@ export default function BookingPage() {
 
       {/* Footer */}
       {step < 5 && (
-        <footer className="fixed bottom-0 inset-x-0 border-t border-accent safe-bottom" style={{ backgroundColor: 'rgb(var(--bg-main))' }}>
-          <div className="max-w-lg mx-auto px-4 py-3" dir="ltr">
+        <footer className="fixed md:sticky bottom-0 inset-x-0 md:inset-x-auto border-t border-accent safe-bottom md:rounded-b-3xl" style={{ backgroundColor: 'rgb(var(--bg-main))' }}>
+          <div className="max-w-lg mx-auto px-4 py-3 md:py-4" dir="ltr">
             <button onClick={next} disabled={!canContinue() || otpSending} className="btn-primary">
               {otpSending ? (
                 <span className="flex items-center gap-2">
@@ -1502,6 +1570,7 @@ export default function BookingPage() {
           <ErrorToast message={toastError} onClose={() => setToastError(null)} isRTL={isRTL} />
         )}
       </AnimatePresence>
+      </div>{/* End desktop wrapper */}
     </div>
   );
 }

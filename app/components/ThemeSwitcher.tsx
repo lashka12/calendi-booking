@@ -38,7 +38,7 @@ export default function ThemeSwitcher() {
   const selectTheme = (themeId: string) => {
     setCurrentTheme(themeId);
     localStorage.setItem('theme', themeId);
-    document.documentElement.setAttribute('data-theme', themeId === 'sage' ? '' : themeId);
+    document.documentElement.setAttribute('data-theme', themeId);
     setIsOpen(false);
   };
 

@@ -130,18 +130,18 @@ export default function OTPInput({ length = 4, onComplete, disabled, shake, erro
           ) : (
             <>
               <input
-                ref={(el) => { inputRefs.current[index] = el; }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={value}
-                onChange={(e) => handleChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                onPaste={index === 0 ? handlePaste : undefined}
+          ref={(el) => { inputRefs.current[index] = el; }}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={value}
+          onChange={(e) => handleChange(index, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(index, e)}
+          onPaste={index === 0 ? handlePaste : undefined}
                 onFocus={() => setFocusedIndex(index)}
                 onBlur={() => setFocusedIndex(-1)}
-                disabled={disabled}
-                className={`
+          disabled={disabled}
+          className={`
                   w-14 h-16 sm:w-16 sm:h-20 text-center text-2xl sm:text-3xl font-bold rounded-xl sm:rounded-2xl
                   transition-all duration-200 outline-none
                   ${disabled ? 'opacity-40 pointer-events-none' : ''}

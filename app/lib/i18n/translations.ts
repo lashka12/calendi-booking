@@ -71,6 +71,8 @@ export const translations = {
     error: 'Error',
     tryAgain: 'Try again',
     sendingCode: 'Sending code...',
+    errorLoadingDates: 'Unable to load available dates',
+    noAvailableDates: 'No available dates this month. Try next month.',
     
     // Weekdays (short)
     sun: 'Su',
@@ -208,6 +210,8 @@ export const translations = {
     error: 'שגיאה',
     tryAgain: 'נסה שוב',
     sendingCode: 'שולח קוד...',
+    errorLoadingDates: 'לא ניתן לטעון תאריכים פנויים',
+    noAvailableDates: 'אין תאריכים פנויים החודש. נסה את החודש הבא.',
     
     // Weekdays (short)
     sun: 'א׳',
@@ -345,6 +349,8 @@ export const translations = {
     error: 'خطأ',
     tryAgain: 'حاول مرة أخرى',
     sendingCode: 'جاري إرسال الرمز...',
+    errorLoadingDates: 'تعذر تحميل التواريخ المتاحة',
+    noAvailableDates: 'لا توجد تواريخ متاحة هذا الشهر. جرب الشهر القادم.',
     
     // Weekdays (short)
     sun: 'أحد',

@@ -70,6 +70,32 @@ export async function getAvailableTimeSlots(date: string, serviceId: string): Pr
   }
 }
 
+// Response type for available dates in range
+export interface AvailableDatesResponse {
+  success: boolean;
+  startDate: string;
+  endDate: string;
+  serviceId: string;
+  serviceDuration: number;
+  availableDates: string[];
+  totalAvailable: number;
+}
+
+export async function getAvailableDatesInRange(
+  startDate: string,
+  endDate: string,
+  serviceId: string
+): Promise<AvailableDatesResponse> {
+  try {
+    const fn = httpsCallable(functions, 'getAvailableDatesInRange');
+    const result = await fn({ startDate, endDate, serviceId });
+    return result.data as AvailableDatesResponse;
+  } catch (error) {
+    console.error('Error fetching available dates:', error);
+    throw error;
+  }
+}
+
 export async function sendOTP(phone: string): Promise<{ success: boolean; message?: string }> {
   try {
     const sendOTPFn = httpsCallable(functions, 'sendOTPWhatsApp');

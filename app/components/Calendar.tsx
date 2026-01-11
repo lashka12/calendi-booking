@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronRight, RefreshCw } from 'lucide-react';
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -15,6 +15,7 @@ import {
   startOfDay,
   getMonth,
   getYear,
+  format,
 } from 'date-fns';
 import { Language, translations } from '@/app/lib/i18n/translations';
 
@@ -23,9 +24,25 @@ interface CalendarProps {
   onSelectDate: (date: Date) => void;
   minDate?: Date;
   language?: Language;
+  // New props for available dates feature
+  availableDates?: string[]; // Array of "YYYY-MM-DD" strings
+  isLoading?: boolean;
+  hasError?: boolean;
+  onRetry?: () => void;
+  onMonthChange?: (startDate: string, endDate: string) => void;
 }
 
-export default function Calendar({ selectedDate, onSelectDate, minDate, language = 'en' }: CalendarProps) {
+export default function Calendar({ 
+  selectedDate, 
+  onSelectDate, 
+  minDate, 
+  language = 'en',
+  availableDates,
+  isLoading = false,
+  hasError = false,
+  onRetry,
+  onMonthChange,
+}: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [direction, setDirection] = useState(0);
   const [animationKey, setAnimationKey] = useState(0);
@@ -60,16 +77,29 @@ export default function Calendar({ selectedDate, onSelectDate, minDate, language
     setAnimationKey(prev => prev + 1);
   }, []);
 
+  // Notify parent when month changes
+  const notifyMonthChange = (newMonth: Date) => {
+    if (onMonthChange) {
+      const start = format(startOfMonth(newMonth), 'yyyy-MM-dd');
+      const end = format(endOfMonth(newMonth), 'yyyy-MM-dd');
+      onMonthChange(start, end);
+    }
+  };
+
   const goToPreviousMonth = () => {
     setDirection(-1);
-    setCurrentMonth(subMonths(currentMonth, 1));
+    const newMonth = subMonths(currentMonth, 1);
+    setCurrentMonth(newMonth);
     setAnimationKey(prev => prev + 1);
+    notifyMonthChange(newMonth);
   };
 
   const goToNextMonth = () => {
     setDirection(1);
-    setCurrentMonth(addMonths(currentMonth, 1));
+    const newMonth = addMonths(currentMonth, 1);
+    setCurrentMonth(newMonth);
     setAnimationKey(prev => prev + 1);
+    notifyMonthChange(newMonth);
   };
 
   const isPastDate = (date: Date) => {
@@ -78,9 +108,18 @@ export default function Calendar({ selectedDate, onSelectDate, minDate, language
     return isBefore(date, today) || (minDate && isBefore(date, startOfDay(minDate)));
   };
 
+  // Check if date is in availableDates array
+  const isDateAvailable = (date: Date) => {
+    if (!availableDates) return true; // If no availableDates provided, all dates are available
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return availableDates.includes(dateStr);
+  };
+
   const isDateDisabled = (date: Date) => {
     if (!date) return true;
     if (isPastDate(date)) return true;
+    // If availableDates is provided, check if date is available
+    if (availableDates && !isDateAvailable(date)) return true;
     return false;
   };
 
@@ -93,6 +132,70 @@ export default function Calendar({ selectedDate, onSelectDate, minDate, language
     // Diagonal wave effect
     return (row + col) * 0.03;
   };
+
+  // Skeleton loading state
+  if (isLoading) {
+    return (
+      <div className="card p-4 sm:p-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between mb-5 sm:mb-6" dir="ltr">
+          <div className="w-10 h-10 rounded-full skeleton" />
+          <div className="h-5 w-32 skeleton rounded-lg" />
+          <div className="w-10 h-10 rounded-full skeleton" />
+        </div>
+
+        {/* Weekdays skeleton */}
+        <div className="grid grid-cols-7 mb-3">
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="flex justify-center py-2">
+              <div className="h-3 w-6 skeleton rounded" />
+            </div>
+          ))}
+        </div>
+
+        {/* Days skeleton - 6 rows x 7 cols */}
+        <div className="grid grid-cols-7 gap-y-1.5 sm:gap-y-2">
+          {[...Array(42)].map((_, i) => (
+            <div key={i} className="aspect-square flex items-center justify-center">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl skeleton" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Error state with retry
+  if (hasError) {
+    return (
+      <div className="card p-4 sm:p-6">
+        <div className="flex flex-col items-center justify-center py-12">
+          <div 
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+            style={{ backgroundColor: 'rgb(var(--accent-100))' }}
+          >
+            <RefreshCw className="w-6 h-6" style={{ color: 'rgb(var(--accent-500))' }} />
+          </div>
+          <p className="text-secondary text-[14px] text-center mb-4">
+            {t.errorLoadingDates || 'Unable to load available dates'}
+          </p>
+          {onRetry && (
+            <button 
+              onClick={onRetry}
+              className="px-5 py-2.5 rounded-xl text-[14px] font-medium transition-colors flex items-center gap-2"
+              style={{ 
+                backgroundColor: 'rgb(var(--accent-100))',
+                color: 'rgb(var(--accent-700))'
+              }}
+            >
+              <RefreshCw className="w-4 h-4" />
+              {t.tryAgain || 'Try again'}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card p-4 sm:p-6">
@@ -152,54 +255,69 @@ export default function Calendar({ selectedDate, onSelectDate, minDate, language
 
       {/* Days Grid */}
       <div className="grid grid-cols-7 gap-y-1.5 sm:gap-y-2">
-        {days.map((day, index) => {
-          if (!day) {
-            return <div key={`empty-${index}`} className="aspect-square" />;
-          }
+          {days.map((day, index) => {
+            if (!day) {
+              return <div key={`empty-${index}`} className="aspect-square" />;
+            }
 
-          const isDisabled = isDateDisabled(day);
-          const isPast = isPastDate(day);
-          const isSelected = selectedDate && isSameDay(day, selectedDate);
-          const isTodayDate = isToday(day);
-          const delay = getDelay(index);
+            const isDisabled = isDateDisabled(day);
+            const isPast = isPastDate(day);
+            const isUnavailable = availableDates && !isDateAvailable(day) && !isPast;
+            const isSelected = selectedDate && isSameDay(day, selectedDate);
+            const isTodayDate = isToday(day);
+            const delay = getDelay(index);
 
-          return (
-            <motion.button
-              key={`${day.toISOString()}-${animationKey}`}
-              initial={{ opacity: 0, scale: 0.5, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ 
-                duration: 0.3,
-                delay: delay,
-                ease: [0.25, 0.46, 0.45, 0.94]
-              }}
-              onClick={() => !isDisabled && onSelectDate(day)}
-              disabled={isDisabled}
-              whileHover={!isDisabled ? { scale: 1.1, transition: { duration: 0.15 } } : {}}
-              whileTap={!isDisabled ? { scale: 0.9 } : {}}
-              className={`
-                aspect-square rounded-xl sm:rounded-2xl flex items-center justify-center text-[14px] sm:text-[16px]
-                transition-colors duration-150
-                ${isDisabled 
-                  ? 'cursor-not-allowed pointer-events-none' 
-                  : ''
-                }
-                ${isSelected 
-                  ? 'bg-accent-solid text-white shadow-lg font-medium' 
-                  : isTodayDate
-                    ? 'text-accent font-semibold bg-accent-light'
-                    : isDisabled
-                      ? 'text-secondary'
-                      : 'text-primary hover:bg-accent-light font-medium'
-                }
-              `}
-              style={isPast && !isSelected ? { color: 'rgb(var(--text-secondary) / 0.35)' } : undefined}
-            >
-              {day.getDate()}
-            </motion.button>
-          );
-        })}
+            return (
+              <motion.button
+                key={`${day.toISOString()}-${animationKey}`}
+                initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ 
+                  duration: 0.3,
+                  delay: delay,
+                  ease: [0.25, 0.46, 0.45, 0.94]
+                }}
+                onClick={() => !isDisabled && onSelectDate(day)}
+                disabled={isDisabled}
+                whileHover={!isDisabled ? { scale: 1.1, transition: { duration: 0.15 } } : {}}
+                whileTap={!isDisabled ? { scale: 0.9 } : {}}
+                className={`
+                  aspect-square rounded-xl sm:rounded-2xl flex items-center justify-center text-[14px] sm:text-[16px]
+                  transition-colors duration-150
+                  ${isDisabled 
+                    ? 'cursor-not-allowed pointer-events-none' 
+                    : ''
+                  }
+                  ${isSelected 
+                    ? 'bg-accent-solid text-white shadow-lg font-medium' 
+                    : isTodayDate && !isUnavailable
+                      ? 'text-accent font-semibold bg-accent-light'
+                      : isDisabled
+                        ? 'text-secondary'
+                        : 'text-primary hover:bg-accent-light font-medium'
+                  }
+                `}
+                style={(isPast || isUnavailable) && !isSelected ? { color: 'rgb(var(--text-secondary) / 0.35)' } : undefined}
+              >
+                {day.getDate()}
+              </motion.button>
+            );
+          })}
       </div>
+      
+      {/* No available dates message */}
+      {availableDates && availableDates.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 p-3 rounded-xl text-center"
+          style={{ backgroundColor: 'rgb(var(--accent-50))' }}
+        >
+          <p className="text-[13px] text-secondary">
+            {t.noAvailableDates || 'No available dates this month. Try next month.'}
+          </p>
+        </motion.div>
+      )}
     </div>
   );
 }

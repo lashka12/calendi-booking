@@ -45,7 +45,7 @@ export default function TimeSlots({ slots, selectedTime, onSelectTime, isLoading
 
   const renderPeriod = (title: string, times: string[], startDelay: number) => {
     if (times.length === 0) return null;
-
+    
     return (
       <div className="mb-5 last:mb-0">
         {/* Period label - centered with lines on both sides */}
@@ -72,12 +72,12 @@ export default function TimeSlots({ slots, selectedTime, onSelectTime, isLoading
             const isSelected = selectedTime === time;
 
             return (
-              <motion.button
-                key={time}
+            <motion.button
+              key={time}
                 initial={false}
-                onClick={() => onSelectTime(time)}
+              onClick={() => onSelectTime(time)}
                 whileTap={{ scale: 0.95 }}
-                className={`
+              className={`
                   relative h-12 rounded-xl text-[14px] font-semibold tabular-nums
                   transition-all duration-200 animate-cardEntrance
                   ${isSelected 
@@ -97,8 +97,8 @@ export default function TimeSlots({ slots, selectedTime, onSelectTime, isLoading
                     : 'none',
                   animationDelay: `${index * 30}ms`
                 }}
-              >
-                {time}
+            >
+              {time}
 
                 {/* Checkmark badge */}
                 <AnimatePresence>
@@ -118,7 +118,7 @@ export default function TimeSlots({ slots, selectedTime, onSelectTime, isLoading
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.button>
+            </motion.button>
             );
           })}
         </div>

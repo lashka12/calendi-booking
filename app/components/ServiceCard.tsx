@@ -63,15 +63,15 @@ export default function ServiceCard({ service, isSelected, onSelect, index, lang
               borderColor: isSelected ? 'transparent' : 'rgb(var(--accent-300))'
             }}
           >
-            {isSelected && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+      {isSelected && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              >
+        >
                 <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-              </motion.div>
-            )}
+        </motion.div>
+      )}
           </div>
         </div>
 
@@ -79,9 +79,9 @@ export default function ServiceCard({ service, isSelected, onSelect, index, lang
         {description && (
           <p className={`text-secondary text-[13px] leading-relaxed mb-3 line-clamp-2 ${isRTL ? 'text-right' : 'text-left'}`}>
             {description}
-          </p>
-        )}
-
+            </p>
+          )}
+          
         {/* Bottom row: Duration + Price */}
         <div className={`flex items-center justify-between pt-2 border-t`} style={{ borderColor: 'rgb(var(--accent-100))' }}>
           {/* Duration */}
@@ -90,8 +90,8 @@ export default function ServiceCard({ service, isSelected, onSelect, index, lang
             <span className="text-[12px] text-secondary font-medium">
               {service.duration} {minutesText}
             </span>
-          </div>
-          
+        </div>
+
           {/* Price */}
           <div 
             className="px-3 py-1 rounded-full text-[14px] font-bold"

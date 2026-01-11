@@ -375,7 +375,7 @@
   input, select, textarea {
     font-size: 16px !important;
   }
-
+  
   ::selection {
     background-color: rgb(var(--accent-200));
     color: rgb(var(--accent-900));
@@ -460,7 +460,7 @@
     @apply rounded-[12px] sm:rounded-[14px] relative overflow-hidden;
     background-color: rgb(var(--accent-100));
   }
-  
+
   .skeleton::after {
     content: '';
     position: absolute;
@@ -480,7 +480,7 @@
       transform: translateX(100%);
     }
   }
-  
+
   /* Entrance animations */
   @keyframes cardEntrance {
     from {
@@ -509,7 +509,7 @@
   .animate-slotEntrance {
     animation: slotEntrance 0.2s ease-out both;
   }
-  
+
   /* Theme-aware accent backgrounds */
   .bg-accent-light {
     background-color: rgb(var(--accent-50));
@@ -544,7 +544,7 @@
   .icon-badge svg {
     color: rgb(var(--accent-600));
   }
-  
+
   /* Info block */
   .info-block {
     @apply rounded-xl p-3 sm:p-3.5;
@@ -555,7 +555,7 @@
     @apply text-[10px] sm:text-[11px] font-medium uppercase tracking-wider mb-1;
     color: rgb(var(--accent-500));
   }
-  
+
   .info-block-value {
     @apply text-[14px] sm:text-[15px] font-semibold;
     color: rgb(var(--text-primary));
@@ -588,7 +588,7 @@
     50% {
       opacity: 1;
       transform: scale(1.1);
-    }
+  }
     70% {
       transform: scale(0.9);
     }
@@ -614,7 +614,7 @@
     50% {
       opacity: 1;
       transform: scale(1) rotate(180deg);
-    }
+  }
   }
 
   @keyframes confetti-fall {
@@ -643,7 +643,7 @@
     0% {
       transform: scale(1);
       opacity: 0.4;
-    }
+  }
     100% {
       transform: scale(2);
       opacity: 0;
@@ -680,7 +680,7 @@
   .animate-float-up {
     animation: float-up 0.5s ease-out forwards;
   }
-
+  
   .animate-pulse-ring {
     animation: pulse-ring 1.5s ease-out infinite;
   }
